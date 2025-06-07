@@ -1,7 +1,7 @@
 // lib/attendance-api.ts
 
 export async function getAttendanceRecords() {
-  const res = await fetch("/api/attendance")
+  const res = await fetch("/api/attendance/admin") // Update endpoint path
 
   if (!res.ok) {
     throw new Error("Gagal mengambil data absensi")
