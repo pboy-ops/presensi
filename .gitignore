@@ -55,6 +55,8 @@ next-env.d.ts
 # PWA files
 **/public/sw.js
 **/public/workbox-*.js
+
+/app/api/*
 **/public/worker-*.js
 **/public/sw.js.map
 **/public/workbox-*.js.map
