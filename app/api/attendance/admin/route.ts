@@ -1,50 +1,34 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { DialogContent } from '@/components/ui/dialog';
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../../auth/[...nextauth]/route"
+import { PrismaClient } from '@prisma/client'
 
-export async function GET(request: Request) {
+const prisma = new PrismaClient()
+
+export async function GET() {
   try {
+    // Check auth session
     const session = await getServerSession(authOptions)
-    
-    if (session?.user?.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
-    const { searchParams } = new URL(request.url)
-    const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
-
-    const startOfDay = new Date(date)
-    startOfDay.setHours(0, 0, 0, 0)
-    
-    const endOfDay = new Date(date)
-    endOfDay.setHours(23, 59, 59, 999)
-
-    const attendance = await prisma.attendance.findMany({
-      where: {
-        date: {
-          gte: startOfDay,
-          lte: endOfDay
-        }
-      },
+    // Get all attendance records
+    const records = await prisma.attendance.findMany({
       include: {
-        employee: {
-          select: {
-            id: true,
-            name: true,
-            nip: true,
-            role: true
-          }
-        }
+        employee: true
       }
     })
 
-    return NextResponse.json(attendance)
+    return NextResponse.json(records)
+
   } catch (error) {
-    console.error('Admin attendance error:', error)
+    console.error("Error fetching attendance:", error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal Server Error" },
       { status: 500 }
     )
   }
